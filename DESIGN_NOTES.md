@@ -1,12 +1,25 @@
 # Design Notes
 
 ## B2 — idempotency key
+The checker uses the Terraform resource address to deduplicate findings within
+a run. It has no persistent cross-run key or state. An unchanged plan produces
+the same sorted output and exit code on repeated runs.
 
-State exactly what key your `cost_tag_check.py` uses to decide a plan has already been
-checked/reported on. Use the word "idempotency" in your explanation.
 
-<!-- Your answer here -->
+## Access boundary
 
-## Any other decision with a non-obvious alternative
+A manager can view a screening report only when the tenant's property's
+`landlord_account_id` matches the manager's `landlord_account_id`. Missing
+tenants or properties are denied.
 
-<!-- Your answer here -->
+## Assumptions and trade-offs
+
+The checker examines resources with create or update actions. It treats a
+missing or empty `landlord_account_id` as a finding. This may flag resources
+that do not support tags. A production version should use provider schema
+information to identify taggable resource types.
+
+## AI correction
+
+The AI initially suggested a PowerShell Terraform command whose quoting failed.
+I used `TF_VAR_landlord_accounts` to pass the list and ran the plan again.

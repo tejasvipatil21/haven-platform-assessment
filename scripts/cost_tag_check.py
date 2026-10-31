@@ -25,8 +25,28 @@ def check_plan(plan_path: str) -> int:
     Returns an exit code: 0 if every taggable resource being created/changed has
     `landlord_account_id`, non-zero otherwise.
     """
-    raise NotImplementedError("Implement this.")
+    try:
+        with open(plan_path, encoding="utf-8") as plan_file:
+          plan = json.load(plan_file)
 
+        missing = set()
+        for resource in plan["resource_changes"]:
+          change = resource["change"]
+          if not ({"create", "update"} & set (change["actions"])):
+             continue
 
-if __name__ == "__main__":
+          after = change.get("after") or {}
+          tags = after.get("tags") or {}
+          if not isinstance(tags, dict) or not tags.get("landlord_account_id"):
+              missing.add(resource["address"])
+
+        for address in sorted(missing):
+           print(f"Missing landlord_account_id: {address}")
+        return 1 if missing else 0
+    except (OSerror, ValueError, KeyError, TypeError) as error:
+        print(f"Cannot check plan {error}", file=sys.stderr)
+
+        return 2
+
+if __name__ =="__main__":
     sys.exit(check_plan(sys.argv[1]))

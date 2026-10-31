@@ -1,12 +1,30 @@
-"""
-Write tests here proving:
-  1. Happy path: running the check against fixtures/plan.json correctly flags the resources
-     missing `landlord_account_id` (listing_media, mls_feed_sync) and passes the ones that
-     have it (landlord_media[0], screening_report_export).
-  2. Idempotency: running the check twice against the same plan file produces the same
-     result both times, with no duplicated output.
+from pathlib import Path
 
-Use a test double / your own in-memory plan dict where you don't need a real file on disk —
-you don't need to shell out to the real script for every case.
-"""
 from scripts.cost_tag_check import check_plan
+
+
+PLAN = Path(__file__).resolve().parents[1] / "fixtures" / "plan.json"
+
+
+def test_fixture_reports_only_missing_tags(capsys):
+    result = check_plan(PLAN)
+    output = capsys.readouterr().out
+
+    assert result == 1
+    assert "listing_media" in output
+    assert "mls_feed_sync" in output
+    assert "landlord_media[0]" not in output
+    assert "screening_report_export" not in output
+
+
+def test_repeated_check_has_same_output_without_duplicates(capsys):
+    first_result = check_plan(PLAN)
+    first_output = capsys.readouterr().out
+
+    second_result = check_plan(PLAN)
+    second_output = capsys.readouterr().out
+
+    assert first_result == second_result == 1
+    assert first_output == second_output
+    assert first_output.count("listing_media") == 1
+    assert first_output.count("mls_feed_sync") == 1
