@@ -39,4 +39,4 @@ for how to use it.
 | `app/access_control.py`, `scripts/cost_tag_check.py` | B2 — stubs to implement |
 
 
-Recording:
+Recording: https://drive.google.com/file/d/1wxr4DM0jLDjI-_Qly4UBz0AS0jIHq0hm/view?usp=drive_link
